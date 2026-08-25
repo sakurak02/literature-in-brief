@@ -49,6 +49,12 @@ markdown.renderer.rules.link_open = (tokens, index, options, environment, self) 
   return defaultLinkOpen(tokens, index, options, environment, self);
 };
 
+const works = await loadWorks();
+const preparedDirectories = await ensureWorkDirectories(works);
+if (preparedDirectories.length > 0) {
+  console.log(`Prepared work directories: ${preparedDirectories.join(", ")}`);
+}
+
 await rm(OUTPUT_DIR, { recursive: true, force: true });
 await mkdir(OUTPUT_DIR, { recursive: true });
 await cp(path.join(ROOT, "src", "assets"), path.join(OUTPUT_DIR, "assets"), { recursive: true });
@@ -58,7 +64,6 @@ await cp(
   path.join(OUTPUT_DIR, "google296662f7c3e82eca.html"),
 );
 
-const works = await loadWorks();
 const records = await loadRecords(works);
 const publishedWorks = works.filter((work) => work.published !== false);
 const publishedWorkIds = new Set(publishedWorks.map((work) => work.id));
@@ -171,6 +176,27 @@ async function loadWorks() {
     throw new Error("works/ に作品が登録されていません。 ");
   }
   return loaded;
+}
+
+async function ensureWorkDirectories(registeredWorks) {
+  const prepared = [];
+
+  for (const work of registeredWorks) {
+    const directories = [
+      path.join(ROOT, "reading", work.id),
+      path.join(ROOT, "src", "assets", "reading", work.id),
+    ];
+
+    for (const directoryPath of directories) {
+      if (existsSync(directoryPath)) continue;
+
+      await mkdir(directoryPath, { recursive: true });
+      await writeFile(path.join(directoryPath, ".gitkeep"), "", { flag: "wx" });
+      prepared.push(path.relative(ROOT, directoryPath).replaceAll(path.sep, "/"));
+    }
+  }
+
+  return prepared;
 }
 
 async function loadRecords(registeredWorks) {
