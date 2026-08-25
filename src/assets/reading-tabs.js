@@ -8,9 +8,9 @@
   }
 
   const modes = [
-    ["source", "英文メモ"],
-    ["translation", "和訳"],
     ["parallel", "対訳"],
+    ["source", "英訳"],
+    ["translation", "和訳"],
   ];
   const tabs = document.createElement("div");
   tabs.className = "reading-tabs";
@@ -37,5 +37,5 @@
   readingRecord.classList.add("reading-record--enhanced");
   readingShell?.classList.add("reading-shell--enhanced");
   recordBody.before(tabs);
-  setMode("source");
+  setMode("parallel");
 })();
