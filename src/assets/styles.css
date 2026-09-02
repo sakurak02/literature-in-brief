@@ -66,6 +66,24 @@ summary:focus-visible {
   transform: translateY(0);
 }
 
+.network-back-link {
+  position: absolute;
+  z-index: 10;
+  top: max(3px, env(safe-area-inset-top));
+  left: max(10px, env(safe-area-inset-left));
+  color: #000;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+  text-decoration: none;
+}
+
+.network-back-link:hover {
+  color: #000;
+  opacity: 0.62;
+}
+
 .shell {
   width: min(100% - 40px, 960px);
   margin-inline: auto;
