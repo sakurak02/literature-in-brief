@@ -61,7 +61,7 @@ Gitはpush日時を保存しないため、サイトに表示されるのは最�
 2. `works/<作品ID>/guide.html` に固定作品ガイドを置く
 3. `npm run build` を実行する
 4. 自動作成された `reading/<作品ID>/` と `src/assets/reading/<作品ID>/` の `.gitkeep` を作品情報と一緒にcommitする
-5. `reading/<作品ID>/001.md` と `src/assets/reading/<作品ID>/001-1.jpg` から記録を始める
+5. `reading/<作品ID>/001.md` と `src/assets/reading/<作品ID>/001-1.webp` から記録を始める
 
 ビルド時には、`works/` に登録された作品IDを基準として、対応する読書記録・画像ディレクトリが不足している場合だけ自動作成します。空ディレクトリもGitで管理できるよう、作成時に `.gitkeep` を配置します。既に存在するディレクトリやファイルは変更しません。
 
