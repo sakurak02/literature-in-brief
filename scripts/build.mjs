@@ -9,6 +9,37 @@ const site = JSON.parse(await readFile(path.join(root, 'site.config.json'), 'utf
 const base = await readFile(path.join(root, 'src/templates/base.html'), 'utf8');
 const md = new MarkdownIt({ html: false });
 const esc = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function renderFold(title, body) {
+  return `<details class="fold-section">
+  <summary><span class="fold-section__title" role="heading" aria-level="2">${esc(title)}</span><span class="fold-section__mark" aria-hidden="true"></span></summary>
+  <div class="fold-section__body">${md.render(body)}</div>
+</details>`;
+}
+
+function renderWorkMarkdown(source, slug) {
+  const guideHeading = /^##[ \t]+作品ガイド[ \t]*$/m.exec(source);
+  const storyHeading = /^##[ \t]+(短く読む『[^』\r\n]+』)[ \t]*$/m.exec(source);
+  if (!guideHeading || !storyHeading || guideHeading.index >= storyHeading.index) {
+    throw Error(`${slug}: 「作品ガイド」「短く読む『作品名』」の見出しを、この順で記述してください`);
+  }
+
+  const afterHeading = match => {
+    const end = match.index + match[0].length;
+    return source[end] === '\n' ? end + 1 : end;
+  };
+  const introduction = source.slice(0, guideHeading.index).trim();
+  const guideBody = source.slice(afterHeading(guideHeading), storyHeading.index).trim();
+  const storyBody = source.slice(afterHeading(storyHeading)).trim();
+  if (!guideBody || !storyBody) throw Error(`${slug}: 折りたたみセクションの本文がありません`);
+
+  return [
+    introduction ? md.render(introduction) : '',
+    renderFold('作品ガイド', guideBody),
+    renderFold(storyHeading[1], storyBody),
+  ].filter(Boolean).join('\n');
+}
+
 const works = [];
 for (const entry of (await readdir(path.join(root, 'works'), {withFileTypes:true})).sort((a,b)=>a.name.localeCompare(b.name))) {
   if (!entry.isDirectory() || entry.name.startsWith('.')) continue;
@@ -32,7 +63,7 @@ for (const entry of (await readdir(path.join(root, 'works'), {withFileTypes:true
   if (!['https:','http:'].includes(new URL(data.museumUrl).protocol)) throw Error('museumUrl はWebページのURLにしてください');
   if (!match[2].trim()) throw Error(`${entry.name}: 本文がありません`);
   await access(path.join(folder,'art.webp'));
-  works.push({...data, folder, html:md.render(match[2])});
+  works.push({...data, folder, html:renderWorkMarkdown(match[2], data.slug)});
 }
 if (!works.length) throw Error('works/ に作品がありません');
 await rm(out,{recursive:true,force:true});
