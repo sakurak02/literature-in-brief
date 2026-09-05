@@ -1,98 +1,64 @@
-# 英語で文学
+# Literature in Brief｜短く読む文学
 
-文学作品を原文で読みながら、わからなかった単語や構文、自分なりの訳を記録する個人サイトです。
+古典や名作を、あらすじではなく、短い読み物として紹介するサイトです。
+literature-in-brief リポジトリと GitHub Pages の公開方式を使用します。
 
-公開URL：<https://sakurako02.github.io/english-literature/>
+## 普段の更新：4手順
 
-## 日々の英語読書記録
+1. `works/作品slug/` フォルダを作ります。日本文学はローマ字表記（例：`ningen-sikkaku`）。
+2. その中に `index.md` を置き、以下のメタ情報と本文を書きます。
+3. 同じフォルダにペン画を `art.webp` という名前で置きます。
+4. GitHub Desktopなどで Commit & Push します。main への Push 後、GitHub Actions が自動でビルド・公開します。
 
-日常的に編集するのは `reading/` 内のMarkdownです。
+```yaml
+---
+title: 人間失格
+author: 太宰治
+year: 1948
+slug: ningen-sikkaku
+museumUrl: "https://sakurak02.github.io/quiet-museum/artwork.html?id=D005"
+---
 
-サキ「開いた窓」の記録は、次の構成にします。
+## 作品ガイド
 
-```text
-reading/
-└── saki-open-window/
-    ├── 001.md
-    ├── 002.md
-    └── 003.md
+ここに作品ガイドを書きます。
+
+## 短く読む『人間失格』
+
+### 一　章のタイトル
+
+ここに本編を書きます。
+
+## 読み終えて
+
+ここに読後の文章を書きます。
 ```
 
-Markdownの定型は `_templates/reading-record.md` にあります。新しい記事は、原文全文、日本語訳、注目した一節、添削前後の訳、英文解説、単語・言い回し、英語と文学についての感想という順序で記録します。
+タイトルはメタ情報から表示されます。本文に同じ作品タイトルのH1を重ねる必要はありません。
+メタ情報は上記5項目を1行ずつ記入してください。複数行の値・配列・入れ子は使いません。
+slug はフォルダ名と同じにします。半角英小文字・数字・ハイフンが使えます。
+ペン画と「静かな美術館」リンクは自動表示されるため、本文への記入は不要です。
+作品一覧はフォルダ名順で自動生成します。HTMLや一覧データの編集は不要です。
 
-「今日読む原文」はテンプレートに含まれる折りたたみ欄へテキストで入力します。読書範囲は、使用しているPDFのページ番号を `PDF pp. 12–16` の形式で記録します。
-
-本文が空の定型見出しは、サイト生成時に表示されません。自由な小見出しも利用できます。
-
-front matter、ページタイトル、記録番号、日付、URLは書きません。
-
-## 日々の更新手順
-
-1. ObsidianでMarkdownを書く
-2. GitHub Desktopでcommitする
-3. pushする
-
-push後、GitHub Actionsが次の内容を自動生成してGitHub Pagesへ公開します。
-
-- 読書記録の個別ページ
-- トップページの最近の記録
-- 作品ページの記録一覧
-- 記録件数と最終更新日
-- `sitemap.xml`
-- `robots.txt`
-
-生成先の `dist/` はGit管理に含めません。
-
-## 更新日
-
-各読書記録のMarkdownファイルに対して、次のGit情報を取得します。
+## 構成
 
 ```text
-git log -1 --format=%cI -- reading/saki-open-window/001.md
+works/ningen-sikkaku/index.md  # 日常編集する本文・メタ情報
+works/ningen-sikkaku/art.webp  # ペン画
+src/templates/base.html       # 共通HTML、Analytics、some cloudsリンク
+src/assets/styles.css         # 共通デザイン
+scripts/build.mjs             # Markdownからページ・一覧・サイトマップを生成
+site.config.json              # サイト名・説明・公開URL
+.github/workflows/pages.yml   # 既存の自動公開設定
+dist/                         # 自動生成物（編集・コミット不要）
 ```
 
-GitHub Actionsでは `.github/workflows/pages.yml` のcheckoutに `fetch-depth: 0` を指定し、履歴を省略せずに取得します。
+## ローカル確認（必要なときだけ）
 
-Gitはpush日時を保存しないため、サイトに表示されるのは最新のcommit日時です。
+Node.js 24以降で `npm ci`、`npm run build` を実行します。
+`npm run check` もビルドし、メタ情報・画像・内部リンクを検証します。
+トップは `dist/index.html`、第1作は `dist/works/ningen-sikkaku/index.html` に生成されます。
+GitHub Pagesでは既存の `/literature-in-brief/` 以下の `works/ningen-sikkaku/` になります。
 
-## 新しい作品を追加する場合
-
-1. `works/<作品ID>/work.json` に作品情報を登録する
-2. `works/<作品ID>/guide.html` に固定作品ガイドを置く
-3. `npm run build` を実行する
-4. 自動作成された `reading/<作品ID>/` と `src/assets/reading/<作品ID>/` の `.gitkeep` を作品情報と一緒にcommitする
-5. `reading/<作品ID>/001.md` と `src/assets/reading/<作品ID>/001-1.webp` から記録を始める
-
-ビルド時には、`works/` に登録された作品IDを基準として、対応する読書記録・画像ディレクトリが不足している場合だけ自動作成します。空ディレクトリもGitで管理できるよう、作成時に `.gitkeep` を配置します。既に存在するディレクトリやファイルは変更しません。
-
-トップページ、作品一覧、件数、最終更新日、サイトマップを手作業で変更する必要はありません。読了時のみ `work.json` の `status` を `読書中` から `読了` へ変更します。
-
-## 自動チェック
-
-サイト生成時には、次の不整合を検出すると公開を停止します。
-
-- 未登録の作品ID
-- 3桁の番号でないMarkdownファイル
-- front matterの混入
-- 存在しない内部リンク
-
-## ローカルで確認する場合
-
-Node.js 24以降を使用します。
-
-```text
-npm ci
-npm run build
-```
-
-生成結果は `dist/` に出力されます。日々の更新ではローカルビルドは必須ではありません。新しい作品を登録したときだけ、必要ディレクトリを準備するため、commit前にローカルビルドを実行してください。
-
-## GitHub Pagesの初回設定
-
-GitHub上でリポジトリを作成し、最初のpushを行った後に一度だけ設定します。
-
-1. GitHubのリポジトリで `Settings` を開く
-2. `Pages` を開く
-3. `Build and deployment` の `Source` を `GitHub Actions` にする
-
-commitとpushはサイト所有者がGitHub Desktopから行います。このプロジェクトの自動処理は、ソースファイルへのcommitやpushを行いません。
+Analytics ID `G-J5JY0WT6EE`、Search Console確認HTML、some cloudsの既存リンク、Actionsの公開フローを維持しています。
+旧記事は削除したため、旧記事へのリンクは404になります。過去の内容はGit履歴から確認できます。

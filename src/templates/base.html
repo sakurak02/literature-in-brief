@@ -2,7 +2,17 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <!-- Google tag (gtag.js) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{pageTitle}}</title>
+  <meta name="description" content="{{description}}">
+  <link rel="canonical" href="{{canonicalUrl}}">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="ja_JP">
+  <meta property="og:site_name" content="Literature in Brief｜短く読む文学">
+  <meta property="og:title" content="{{pageTitle}}">
+  <meta property="og:description" content="{{description}}">
+  <meta property="og:url" content="{{canonicalUrl}}">
+  <link rel="stylesheet" href="{{assetPrefix}}assets/styles.css">
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-J5JY0WT6EE"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -10,27 +20,11 @@
     gtag('js', new Date());
     gtag('config', 'G-J5JY0WT6EE');
   </script>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="{{description}}">
-  <meta property="og:type" content="website">
-  <meta property="og:locale" content="ja_JP">
-  <meta property="og:site_name" content="英語で文学">
-  <meta property="og:title" content="{{pageTitle}}">
-  <meta property="og:description" content="{{description}}">
-  <meta property="og:url" content="{{canonicalUrl}}">
-  <title>{{pageTitle}}</title>
-  <link rel="canonical" href="{{canonicalUrl}}">
-  <link rel="stylesheet" href="{{assetPrefix}}assets/styles.css">
-  <script src="{{assetPrefix}}assets/image-viewer.js" defer></script>
-  <script src="{{assetPrefix}}assets/reading-tabs.js" defer></script>
 </head>
-<body class="{{bodyClass}}">
+<body>
   <a class="skip-link" href="#main-content">本文へ移動</a>
-  <a class="network-back-link" href="https://sakurak02.github.io/some-clouds/">some clouds</a>
+  <div class="network"><a href="https://sakurak02.github.io/some-clouds/">some clouds</a></div>
   {{content}}
-  <dialog class="image-dialog" data-image-dialog aria-label="画像の拡大表示">
-    <button class="image-dialog__close" type="button" data-image-close aria-label="拡大表示を閉じる">閉じる</button>
-    <img data-image-dialog-content src="" alt="">
-  </dialog>
+  <footer>Literature in Brief <span>短く読む文学</span></footer>
 </body>
 </html>

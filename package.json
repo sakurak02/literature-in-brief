@@ -1,9 +1,9 @@
 {
-  "name": "english-literature",
+  "name": "literature-in-brief",
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "英語で文学 — 英語読書記録をMarkdownから生成する静的サイト",
+  "description": "Literature in Brief｜短く読む文学 — 作品フォルダから生成する静的サイト",
   "scripts": {
     "build": "node scripts/build.mjs",
     "check": "node scripts/build.mjs --check"
