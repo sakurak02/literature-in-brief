@@ -52,10 +52,6 @@ museumUrl: https://sakurak02.github.io/quiet-museum/artwork.html?id=D005
 
 ## 短く読む『人間失格』
 
-太宰治『人間失格』再構成版
-
----
-
 ### 一　人間がこわい
 
 大庭葉蔵は、子どものころから人間がよくわからなかった。
