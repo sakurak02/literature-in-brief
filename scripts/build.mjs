@@ -71,6 +71,7 @@ function renderWorkMarkdown(source, slug) {
 }
 
 const works = [];
+const workNumbers = new Set();
 for (const entry of (await readdir(path.join(root, 'works'), {withFileTypes:true})).sort((a,b)=>a.name.localeCompare(b.name))) {
   if (!entry.isDirectory() || entry.name.startsWith('.')) continue;
   const folder = path.join(root, 'works', entry.name);
@@ -78,8 +79,11 @@ for (const entry of (await readdir(path.join(root, 'works'), {withFileTypes:true
   const match = source.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
   if (!match) throw Error(`${entry.name}: front matter が必要です`);
   const data = parseFrontMatter(match[1], entry.name);
-  for (const key of ['title','author','year','slug','date','region','art_quote','museumUrl']) if (!data[key]) throw Error(`${entry.name}: ${key} が必要です`);
+  for (const key of ['title','author','year','slug','number','date','region','art_quote','museumUrl']) if (!data[key]) throw Error(`${entry.name}: ${key} が必要です`);
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(data.slug) || data.slug !== entry.name) throw Error(`${entry.name}: slug とフォルダ名を一致させてください`);
+  if (!/^\d{3}$/.test(data.number)) throw Error(`${entry.name}: number は3桁の数字で記述してください`);
+  if (workNumbers.has(data.number)) throw Error(`${entry.name}: number ${data.number} が他の作品と重複しています`);
+  workNumbers.add(data.number);
   if (!/^\d{4}$/.test(data.year)) throw Error(`${entry.name}: year は4桁です`);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(data.date)) throw Error(`${entry.name}: date は YYYY-MM-DD 形式で記述してください`);
   const parsedDate = new Date(`${data.date}T00:00:00Z`);
@@ -115,17 +119,18 @@ const regionGroups = [
   {key:'japan', label:'日本文学'},
   {key:'foreign', label:'海外文学'},
 ];
-const renderCard = w => `<a class="work-card" href="works/${w.slug}/"><img src="works/${w.slug}/art.webp" alt="" width="240" height="240"><div><h4>${esc(w.title)}</h4><p>${esc(w.author)}<span class="year">${esc(w.year)}年</span></p></div></a>`;
+const byNumber = (a,b) => a.number.localeCompare(b.number) || a.slug.localeCompare(b.slug);
+const renderCard = w => `<a class="work-card" href="works/${w.slug}/"><img src="works/${w.slug}/art.webp" alt="" width="240" height="240"><div><div class="work-card__title"><span class="work-number">${esc(w.number)}</span><h4>${esc(w.title)}</h4></div><p>${esc(w.author)}<span class="year">${esc(w.year)}年</span></p></div></a>`;
 const renderRegion = ({key,label}) => {
-  const regionWorks = works.filter(w=>w.region === key).sort((a,b)=>b.date.localeCompare(a.date) || a.slug.localeCompare(b.slug));
+  const regionWorks = works.filter(w=>w.region === key).sort(byNumber);
   return `<section class="work-group" aria-labelledby="region-${key}"><h3 id="region-${key}" class="region-title">${label}</h3><div class="works">${regionWorks.map(renderCard).join('')}</div></section>`;
 };
-const topWork = regionGroups.flatMap(({key}) => works.filter(w=>w.region === key).sort((a,b)=>b.date.localeCompare(a.date) || a.slug.localeCompare(b.slug)))[0];
+const topWork = regionGroups.flatMap(({key}) => works.filter(w=>w.region === key).sort(byNumber))[0];
 await page('',site.title,`<main id="main-content" class="home"><header class="intro"><p class="eyebrow">短く読む文学</p><h1>Literature in Brief</h1><p class="description">古典や名作を、あらすじではなく、短い読み物として。<br>長い原作へ踏み出す前の、小さな入口です。</p></header><section aria-labelledby="works-title"><h2 id="works-title" class="list-title">作品一覧</h2>${regionGroups.map(renderRegion).join('')}</section></main>`,new URL(topWork.twitterImagePath,site.siteUrl).href);
 for (const w of works) {
   const route = `works/${w.slug}/`;
   const artQuote = esc(w.art_quote).replace(/\n/g, '<br>');
-  await page(route,`${w.title} — ${site.title}`,`<main id="main-content" class="reading"><nav aria-label="サイト"><a href="../../">Literature in Brief <span aria-hidden="true">／</span> 短く読む文学</a></nav><article><header class="work-heading"><p class="eyebrow">短く読む文学</p><h1>${esc(w.title)}</h1><p>${esc(w.author)}<span class="year">原作 ${esc(w.year)}年</span></p></header><div class="prose">${w.html}</div><section class="artwork"><blockquote class="art-quote"><span class="art-quote__text"><span class="art-quote__mark art-quote__mark--open" aria-hidden="true">“</span>${artQuote}<span class="art-quote__mark art-quote__mark--close" aria-hidden="true">”</span></span></blockquote><a href="${esc(w.museumUrl)}"><img src="art.webp" alt="『${esc(w.title)}』から生まれたペン画" loading="lazy" decoding="async"></a><p><a href="${esc(w.museumUrl)}">静かな美術館でこの作品を見る <span aria-hidden="true">→</span></a></p></section></article><p class="back"><a href="../../">← 作品一覧へ</a></p></main>`,new URL(w.twitterImagePath,site.siteUrl).href);
+  await page(route,`${w.title} — ${site.title}`,`<main id="main-content" class="reading"><nav aria-label="サイト"><a href="../../">Literature in Brief <span aria-hidden="true">／</span> 短く読む文学</a></nav><article><header class="work-heading"><p class="eyebrow">短く読む文学<span class="work-number">${esc(w.number)}</span></p><h1>${esc(w.title)}</h1><p>${esc(w.author)}<span class="year">原作 ${esc(w.year)}年</span></p></header><div class="prose">${w.html}</div><section class="artwork"><blockquote class="art-quote"><span class="art-quote__text"><span class="art-quote__mark art-quote__mark--open" aria-hidden="true">“</span>${artQuote}<span class="art-quote__mark art-quote__mark--close" aria-hidden="true">”</span></span></blockquote><a href="${esc(w.museumUrl)}"><img src="art.webp" alt="『${esc(w.title)}』から生まれたペン画" loading="lazy" decoding="async"></a><p><a href="${esc(w.museumUrl)}">静かな美術館でこの作品を見る <span aria-hidden="true">→</span></a></p></section></article><p class="back"><a href="../../">← 作品一覧へ</a></p></main>`,new URL(w.twitterImagePath,site.siteUrl).href);
   await cp(path.join(w.folder,'art.webp'),path.join(out,route,'art.webp'));
 }
 await writeFile(path.join(out,'sitemap.xml'),`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${pages.map(p=>`<url><loc>${esc(new URL(p.route,site.siteUrl).href)}</loc></url>`).join('')}</urlset>`);

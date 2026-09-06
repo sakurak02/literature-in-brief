@@ -1,0 +1,21 @@
+.work-number {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font: 400 .75rem/1.8 system-ui, sans-serif;
+  letter-spacing: .14em;
+}
+
+.work-card__title {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin: 0 0 16px;
+}
+
+.work-card__title h4 {
+  margin: 0;
+}
+
+.work-heading .work-number {
+  margin-left: 1.2rem;
+}
