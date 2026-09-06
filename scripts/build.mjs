@@ -10,16 +10,6 @@ const base = await readFile(path.join(root, 'src/templates/base.html'), 'utf8');
 const md = new MarkdownIt({ html: false });
 const esc = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-async function exists(file) {
-  try {
-    await access(file);
-    return true;
-  } catch (error) {
-    if (error.code === 'ENOENT') return false;
-    throw error;
-  }
-}
-
 function parseFrontMatter(source, slug) {
   const data = {};
   const lines = source.split('\n');
@@ -103,15 +93,12 @@ for (const entry of (await readdir(path.join(root, 'works'), {withFileTypes:true
   if (!['https:','http:'].includes(new URL(data.museumUrl).protocol)) throw Error('museumUrl はWebページのURLにしてください');
   if (!match[2].trim()) throw Error(`${entry.name}: 本文がありません`);
   await access(path.join(folder,'art.webp'));
-  const twitterImagePath = `social/twitter/${data.slug}.png`;
-  const hasTwitterImage = await exists(path.join(root, twitterImagePath));
-  works.push({...data, folder, twitterImagePath:hasTwitterImage ? twitterImagePath : `works/${data.slug}/art.webp`, html:renderWorkMarkdown(match[2], data.slug)});
+  works.push({...data, folder, twitterImagePath:`works/${data.slug}/art.webp`, html:renderWorkMarkdown(match[2], data.slug)});
 }
 if (!works.length) throw Error('works/ に作品がありません');
 await rm(out,{recursive:true,force:true});
 await mkdir(out,{recursive:true});
 await cp(path.join(root,'src/assets'),path.join(out,'assets'),{recursive:true});
-if (await exists(path.join(root,'social'))) await cp(path.join(root,'social'),path.join(out,'social'),{recursive:true});
 await cp(path.join(root,'google296662f7c3e82eca.html'),path.join(out,'google296662f7c3e82eca.html'));
 await writeFile(path.join(out,'.nojekyll'),'');
 const pages = [];
