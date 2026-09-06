@@ -102,9 +102,9 @@ await cp(path.join(root,'src/assets'),path.join(out,'assets'),{recursive:true});
 await cp(path.join(root,'google296662f7c3e82eca.html'),path.join(out,'google296662f7c3e82eca.html'));
 await writeFile(path.join(out,'.nojekyll'),'');
 const pages = [];
-async function page(route,title,content) {
+async function page(route,title,content,twitterImage) {
   const prefix = route ? '../../' : './';
-  const values = {pageTitle:esc(title),description:esc(site.description),canonicalUrl:esc(new URL(route,site.siteUrl).href),assetPrefix:prefix,content};
+  const values = {pageTitle:esc(title),description:esc(site.description),canonicalUrl:esc(new URL(route,site.siteUrl).href),twitterImage:esc(twitterImage),assetPrefix:prefix,content};
   const html = base.replace(/\{\{(\w+)\}\}/g,(_,key)=> { if (!(key in values)) throw Error(`Unknown template key: ${key}`); return values[key]; });
   const dir = path.join(out,route);
   await mkdir(dir,{recursive:true});
@@ -120,11 +120,11 @@ const renderRegion = ({key,label}) => {
   const regionWorks = works.filter(w=>w.region === key).sort((a,b)=>b.date.localeCompare(a.date) || a.slug.localeCompare(b.slug));
   return `<section class="work-group" aria-labelledby="region-${key}"><h3 id="region-${key}" class="region-title">${label}</h3><div class="works">${regionWorks.map(renderCard).join('')}</div></section>`;
 };
-await page('',site.title,`<main id="main-content" class="home"><header class="intro"><p class="eyebrow">短く読む文学</p><h1>Literature in Brief</h1><p class="description">古典や名作を、あらすじではなく、短い読み物として。<br>長い原作へ踏み出す前の、小さな入口です。</p></header><section aria-labelledby="works-title"><h2 id="works-title" class="list-title">作品一覧</h2>${regionGroups.map(renderRegion).join('')}</section></main>`);
+await page('',site.title,`<main id="main-content" class="home"><header class="intro"><p class="eyebrow">短く読む文学</p><h1>Literature in Brief</h1><p class="description">古典や名作を、あらすじではなく、短い読み物として。<br>長い原作へ踏み出す前の、小さな入口です。</p></header><section aria-labelledby="works-title"><h2 id="works-title" class="list-title">作品一覧</h2>${regionGroups.map(renderRegion).join('')}</section></main>`,new URL('works/ningen-sikkaku/art.webp',site.siteUrl).href);
 for (const w of works) {
   const route = `works/${w.slug}/`;
   const artQuote = esc(w.art_quote).replace(/\n/g, '<br>');
-  await page(route,`${w.title} — ${site.title}`,`<main id="main-content" class="reading"><nav aria-label="サイト"><a href="../../">Literature in Brief <span aria-hidden="true">／</span> 短く読む文学</a></nav><article><header class="work-heading"><p class="eyebrow">短く読む文学</p><h1>${esc(w.title)}</h1><p>${esc(w.author)}<span class="year">原作 ${esc(w.year)}年</span></p></header><div class="prose">${w.html}</div><section class="artwork"><blockquote class="art-quote"><span class="art-quote__text"><span class="art-quote__mark art-quote__mark--open" aria-hidden="true">“</span>${artQuote}<span class="art-quote__mark art-quote__mark--close" aria-hidden="true">”</span></span></blockquote><a href="${esc(w.museumUrl)}"><img src="art.webp" alt="『${esc(w.title)}』から生まれたペン画" loading="lazy" decoding="async"></a><p><a href="${esc(w.museumUrl)}">静かな美術館でこの作品を見る <span aria-hidden="true">→</span></a></p></section></article><p class="back"><a href="../../">← 作品一覧へ</a></p></main>`);
+  await page(route,`${w.title} — ${site.title}`,`<main id="main-content" class="reading"><nav aria-label="サイト"><a href="../../">Literature in Brief <span aria-hidden="true">／</span> 短く読む文学</a></nav><article><header class="work-heading"><p class="eyebrow">短く読む文学</p><h1>${esc(w.title)}</h1><p>${esc(w.author)}<span class="year">原作 ${esc(w.year)}年</span></p></header><div class="prose">${w.html}</div><section class="artwork"><blockquote class="art-quote"><span class="art-quote__text"><span class="art-quote__mark art-quote__mark--open" aria-hidden="true">“</span>${artQuote}<span class="art-quote__mark art-quote__mark--close" aria-hidden="true">”</span></span></blockquote><a href="${esc(w.museumUrl)}"><img src="art.webp" alt="『${esc(w.title)}』から生まれたペン画" loading="lazy" decoding="async"></a><p><a href="${esc(w.museumUrl)}">静かな美術館でこの作品を見る <span aria-hidden="true">→</span></a></p></section></article><p class="back"><a href="../../">← 作品一覧へ</a></p></main>`,new URL(`works/${w.slug}/art.webp`,site.siteUrl).href);
   await cp(path.join(w.folder,'art.webp'),path.join(out,route,'art.webp'));
 }
 await writeFile(path.join(out,'sitemap.xml'),`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${pages.map(p=>`<url><loc>${esc(new URL(p.route,site.siteUrl).href)}</loc></url>`).join('')}</urlset>`);
