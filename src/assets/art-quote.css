@@ -1,0 +1,38 @@
+.art-quote {
+  margin: 0 auto 2rem;
+  color: var(--ink);
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 2.25;
+  letter-spacing: .04em;
+}
+
+.art-quote__text {
+  position: relative;
+  display: inline-block;
+}
+
+.art-quote__mark {
+  position: absolute;
+}
+
+.art-quote__mark--open {
+  top: 0;
+  right: calc(100% + .2em);
+}
+
+.art-quote__mark--close {
+  bottom: 0;
+  left: calc(100% + .2em);
+}
+
+.artwork img {
+  margin-top: 0;
+}
+
+@media (max-width: 560px) {
+  .art-quote {
+    font-size: .9rem;
+    letter-spacing: .01em;
+  }
+}

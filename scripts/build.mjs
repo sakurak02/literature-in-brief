@@ -10,6 +10,36 @@ const base = await readFile(path.join(root, 'src/templates/base.html'), 'utf8');
 const md = new MarkdownIt({ html: false });
 const esc = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
+function parseFrontMatter(source, slug) {
+  const data = {};
+  const lines = source.split('\n');
+  for (let i = 0; i < lines.length; i += 1) {
+    const line = lines[i];
+    if (!line.trim() || line.trim().startsWith('#')) continue;
+    const field = line.match(/^([A-Za-z][A-Za-z0-9_]*):\s*(.*?)\s*$/);
+    if (!field || Object.hasOwn(data, field[1])) throw Error(`${slug}: メタ情報の形式または重複を確認してください`);
+    let value = field[2];
+    if (value === '|') {
+      const block = [];
+      while (i + 1 < lines.length && (lines[i + 1] === '' || /^[ \t]+/.test(lines[i + 1]))) {
+        i += 1;
+        block.push(lines[i].replace(/^[ \t]{2}/, ''));
+      }
+      while (block.length && !block[0].trim()) block.shift();
+      while (block.length && !block.at(-1).trim()) block.pop();
+      if (!block.length || block.some(blockLine => !blockLine.trim())) throw Error(`${slug}: ${field[1]} は空行を含まない複数行で記述してください`);
+      value = block.join('\n');
+    } else if (value.startsWith('"')) {
+      value = JSON.parse(value);
+    } else if (value.startsWith("'")) {
+      if (!value.endsWith("'")) throw Error('引用符が閉じていません');
+      value = value.slice(1, -1).replace(/''/g, "'");
+    }
+    data[field[1]] = value;
+  }
+  return data;
+}
+
 function renderFold(title, body) {
   return `<details class="fold-section">
   <summary><span class="fold-section__title" role="heading" aria-level="2">${esc(title)}</span><span class="fold-section__mark" aria-hidden="true"></span></summary>
@@ -47,19 +77,19 @@ for (const entry of (await readdir(path.join(root, 'works'), {withFileTypes:true
   const source = (await readFile(path.join(folder, 'index.md'), 'utf8')).replace(/^\uFEFF/, '').replace(/\r\n/g, '\n');
   const match = source.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
   if (!match) throw Error(`${entry.name}: front matter が必要です`);
-  const data = {};
-  for (const line of match[1].split('\n')) {
-    if (!line.trim() || line.trim().startsWith('#')) continue;
-    const field = line.match(/^([A-Za-z]+):\s*(.*?)\s*$/);
-    if (!field || Object.hasOwn(data, field[1])) throw Error(`${entry.name}: メタ情報の形式または重複を確認してください`);
-    let value = field[2];
-    if (value.startsWith('"')) value = JSON.parse(value);
-    else if (value.startsWith("'")) { if (!value.endsWith("'")) throw Error('引用符が閉じていません'); value = value.slice(1,-1).replace(/''/g,"'"); }
-    data[field[1]] = value;
-  }
-  for (const key of ['title','author','year','slug','museumUrl']) if (!data[key]) throw Error(`${entry.name}: ${key} が必要です`);
+  const data = parseFrontMatter(match[1], entry.name);
+  for (const key of ['title','author','year','slug','date','region','art_quote','museumUrl']) if (!data[key]) throw Error(`${entry.name}: ${key} が必要です`);
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(data.slug) || data.slug !== entry.name) throw Error(`${entry.name}: slug とフォルダ名を一致させてください`);
   if (!/^\d{4}$/.test(data.year)) throw Error(`${entry.name}: year は4桁です`);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(data.date)) throw Error(`${entry.name}: date は YYYY-MM-DD 形式で記述してください`);
+  const parsedDate = new Date(`${data.date}T00:00:00Z`);
+  if (Number.isNaN(parsedDate.getTime()) || parsedDate.toISOString().slice(0,10) !== data.date) throw Error(`${entry.name}: date に実在する日付を記述してください`);
+  if (!['japan','foreign'].includes(data.region)) throw Error(`${entry.name}: region は japan または foreign を指定してください`);
+  const artQuoteLines = data.art_quote.split('\n').map(line => line.trim());
+  if (artQuoteLines.length < 2 || artQuoteLines.length > 4) throw Error(`${entry.name}: art_quote は2〜4行で記述してください`);
+  if (artQuoteLines.some(line => !line)) throw Error(`${entry.name}: art_quote に空行を含めないでください`);
+  if (/[「」“”]/.test(data.art_quote)) throw Error(`${entry.name}: art_quote に引用符を含めないでください（表示時に “ ” が自動で付きます）`);
+  data.art_quote = artQuoteLines.join('\n');
   if (!['https:','http:'].includes(new URL(data.museumUrl).protocol)) throw Error('museumUrl はWebページのURLにしてください');
   if (!match[2].trim()) throw Error(`${entry.name}: 本文がありません`);
   await access(path.join(folder,'art.webp'));
@@ -81,10 +111,20 @@ async function page(route,title,content) {
   await writeFile(path.join(dir,'index.html'),html);
   pages.push({route,html});
 }
-await page('',site.title,`<main id="main-content" class="home"><header class="intro"><p class="eyebrow">短く読む文学</p><h1>Literature in Brief</h1><p class="description">古典や名作を、あらすじではなく、短い読み物として。<br>長い原作へ踏み出す前の、小さな入口です。</p></header><section aria-labelledby="works-title"><h2 id="works-title" class="list-title">作品一覧</h2><div class="works">${works.map(w=>`<a class="work-card" href="works/${w.slug}/"><img src="works/${w.slug}/art.webp" alt="" width="240" height="240"><div><h3>${esc(w.title)}</h3><p>${esc(w.author)}<span class="year">${esc(w.year)}年</span></p></div></a>`).join('')}</div></section></main>`);
+const regionGroups = [
+  {key:'japan', label:'日本文学'},
+  {key:'foreign', label:'海外文学'},
+];
+const renderCard = w => `<a class="work-card" href="works/${w.slug}/"><img src="works/${w.slug}/art.webp" alt="" width="240" height="240"><div><h4>${esc(w.title)}</h4><p>${esc(w.author)}<span class="year">${esc(w.year)}年</span></p></div></a>`;
+const renderRegion = ({key,label}) => {
+  const regionWorks = works.filter(w=>w.region === key).sort((a,b)=>b.date.localeCompare(a.date) || a.slug.localeCompare(b.slug));
+  return `<section class="work-group" aria-labelledby="region-${key}"><h3 id="region-${key}" class="region-title">${label}</h3><div class="works">${regionWorks.map(renderCard).join('')}</div></section>`;
+};
+await page('',site.title,`<main id="main-content" class="home"><header class="intro"><p class="eyebrow">短く読む文学</p><h1>Literature in Brief</h1><p class="description">古典や名作を、あらすじではなく、短い読み物として。<br>長い原作へ踏み出す前の、小さな入口です。</p></header><section aria-labelledby="works-title"><h2 id="works-title" class="list-title">作品一覧</h2>${regionGroups.map(renderRegion).join('')}</section></main>`);
 for (const w of works) {
   const route = `works/${w.slug}/`;
-  await page(route,`${w.title} — ${site.title}`,`<main id="main-content" class="reading"><nav aria-label="サイト"><a href="../../">Literature in Brief <span aria-hidden="true">／</span> 短く読む文学</a></nav><article><header class="work-heading"><p class="eyebrow">短く読む文学</p><h1>${esc(w.title)}</h1><p>${esc(w.author)}<span class="year">原作 ${esc(w.year)}年</span></p></header><div class="prose">${w.html}</div><section class="artwork" aria-labelledby="art-title"><h2 id="art-title">この作品から生まれた一枚</h2><a href="${esc(w.museumUrl)}"><img src="art.webp" alt="『${esc(w.title)}』から生まれたペン画" loading="lazy" decoding="async"></a><p><a href="${esc(w.museumUrl)}">静かな美術館でこの作品を見る <span aria-hidden="true">→</span></a></p></section></article><p class="back"><a href="../../">← 作品一覧へ</a></p></main>`);
+  const artQuote = esc(w.art_quote).replace(/\n/g, '<br>');
+  await page(route,`${w.title} — ${site.title}`,`<main id="main-content" class="reading"><nav aria-label="サイト"><a href="../../">Literature in Brief <span aria-hidden="true">／</span> 短く読む文学</a></nav><article><header class="work-heading"><p class="eyebrow">短く読む文学</p><h1>${esc(w.title)}</h1><p>${esc(w.author)}<span class="year">原作 ${esc(w.year)}年</span></p></header><div class="prose">${w.html}</div><section class="artwork"><blockquote class="art-quote"><span class="art-quote__text"><span class="art-quote__mark art-quote__mark--open" aria-hidden="true">“</span>${artQuote}<span class="art-quote__mark art-quote__mark--close" aria-hidden="true">”</span></span></blockquote><a href="${esc(w.museumUrl)}"><img src="art.webp" alt="『${esc(w.title)}』から生まれたペン画" loading="lazy" decoding="async"></a><p><a href="${esc(w.museumUrl)}">静かな美術館でこの作品を見る <span aria-hidden="true">→</span></a></p></section></article><p class="back"><a href="../../">← 作品一覧へ</a></p></main>`);
   await cp(path.join(w.folder,'art.webp'),path.join(out,route,'art.webp'));
 }
 await writeFile(path.join(out,'sitemap.xml'),`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${pages.map(p=>`<url><loc>${esc(new URL(p.route,site.siteUrl).href)}</loc></url>`).join('')}</urlset>`);

@@ -3,6 +3,12 @@ title: 人間失格
 author: 太宰治
 year: 1948
 slug: ningen-sikkaku
+date: 2026-09-05
+region: japan
+art_quote: |
+  人に合わせて笑うことを覚えた少年は、
+  いつしか、その笑顔の外へ
+  出られなくなっていった。
 museumUrl: https://sakurak02.github.io/quiet-museum/artwork.html?id=D005
 ---
 
@@ -48,7 +54,7 @@ museumUrl: https://sakurak02.github.io/quiet-museum/artwork.html?id=D005
 
 そしてもう一つ。  
 物語を読んだあとに残った印象を、一枚のペン画にしました。  
-「この作品から生まれた一枚」も、あわせて眺めてみてください。
+ペン画も、あわせて眺めてみてください。
 
 ## 短く読む『人間失格』
 
