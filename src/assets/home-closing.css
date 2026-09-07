@@ -1,0 +1,28 @@
+.home-closing {
+  max-width: 34rem;
+  margin: 5.5rem auto 0;
+  color: var(--muted);
+  font-size: .9375rem;
+  line-height: 2;
+}
+
+.home-closing p {
+  margin: 0 0 1.35em;
+}
+
+.home-closing p:last-child {
+  margin-bottom: 0;
+}
+
+.home-closing strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+@media (max-width: 560px) {
+  .home-closing {
+    margin-top: 4rem;
+    font-size: .9375rem;
+    line-height: 2;
+  }
+}
