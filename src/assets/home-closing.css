@@ -1,17 +1,15 @@
 .home-closing {
-  max-width: 34rem;
-  margin: 5.5rem auto 0;
+  margin: 2.5rem 0 0;
+  padding-top: 2.5rem;
+  border-top: 1px solid var(--line);
   color: var(--muted);
   font-size: .9375rem;
   line-height: 2;
 }
 
 .home-closing p {
-  margin: 0 0 1.35em;
-}
-
-.home-closing p:last-child {
-  margin-bottom: 0;
+  max-width: 32rem;
+  margin: 0 auto;
 }
 
 .home-closing strong {
@@ -21,8 +19,7 @@
 
 @media (max-width: 560px) {
   .home-closing {
-    margin-top: 4rem;
-    font-size: .9375rem;
-    line-height: 2;
+    margin-top: 2rem;
+    padding-top: 2rem;
   }
 }

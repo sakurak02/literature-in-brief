@@ -125,17 +125,18 @@ const renderRegion = ({key,label}) => {
   const regionWorks = works.filter(w=>w.region === key).sort(byNumber);
   return `<section class="work-group" aria-labelledby="region-${key}"><h3 id="region-${key}" class="region-title">${label}</h3><div class="works">${regionWorks.map(renderCard).join('')}</div></section>`;
 };
-const homeClosing = md.render(`舞台や制度、暮らしの形は変わっても、
-
-**見栄、執着、嫉妬、自己欺瞞、承認欲求、愛情と依存の入り混じり方**は、驚くほど変わらない。
-
-古典を読むのは、昔の話を知ることというより、
-
-**昔の人がすでに見抜いていた人間のありようを、今の自分たちがもう一度見つけ直すこと**なのかもしれない。
-
-だから、自分の気持ちがよくわからなくなったときや、誰かのことがわからなくなったとき、
-
-古典を開いてみると、昔の誰かが、似たような人間をもう見ていたかもしれない。`);
+const homeClosingLines = [
+  '舞台や制度、暮らしの形は変わっても、',
+  '**見栄、執着、嫉妬、自己欺瞞、承認欲求、愛情と依存の入り混じり方**は、',
+  '驚くほど変わらない。',
+  '古典を読むのは、昔の話を知ることというより、',
+  '**昔の人がすでに見抜いていた人間のありようを、**',
+  '**今の自分たちがもう一度見つけ直すこと**。',
+  'だから、自分の気持ちがよくわからなくなったときや、',
+  '誰かのことがわからなくなったとき、',
+  '古典を開いてみると、昔の誰かが、似たような人間をもう見ていたかもしれない。',
+];
+const homeClosing = `<p>${homeClosingLines.map(line=>md.renderInline(line)).join('<br>')}</p>`;
 const topWork = regionGroups.flatMap(({key}) => works.filter(w=>w.region === key).sort(byNumber))[0];
 await page('',site.title,`<main id="main-content" class="home"><header class="intro"><p class="eyebrow">短く読む文学</p><h1>Literature in Brief</h1><p class="description">古典や名作を、あらすじではなく、短い読み物として。<br>長い原作へ踏み出す前の、小さな入口です。</p></header><section aria-labelledby="works-title"><h2 id="works-title" class="list-title">作品一覧</h2>${regionGroups.map(renderRegion).join('')}</section><div class="home-closing">${homeClosing}</div></main>`,new URL(topWork.twitterImagePath,site.siteUrl).href);
 for (const w of works) {
