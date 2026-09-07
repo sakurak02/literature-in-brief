@@ -138,7 +138,7 @@ const homeClosingLines = [
 ];
 const homeClosing = `<p>${homeClosingLines.map(line=>md.renderInline(line)).join('<br>')}</p>`;
 const topWork = regionGroups.flatMap(({key}) => works.filter(w=>w.region === key).sort(byNumber))[0];
-await page('',site.title,`<main id="main-content" class="home"><header class="intro"><p class="eyebrow">短く読む文学</p><h1>Literature in Brief</h1><p class="description">古典や名作を、あらすじではなく、短い読み物として。<br>長い原作へ踏み出す前の、小さな入口です。</p></header><section aria-labelledby="works-title"><h2 id="works-title" class="list-title">作品一覧</h2>${regionGroups.map(renderRegion).join('')}</section><div class="home-closing">${homeClosing}</div></main>`,new URL(topWork.twitterImagePath,site.siteUrl).href);
+await page('',site.title,`<main id="main-content" class="home"><header class="intro"><p class="eyebrow">短く読む文学</p><h1>Literature in Brief</h1><p class="description">古典や名作を、あらすじではなく、短い読み物として。<br>長い原作へ踏み出す前の、小さな入口です。</p></header><section aria-labelledby="works-title"><h2 id="works-title" class="list-title">作品一覧</h2>${regionGroups.map(renderRegion).join('')}</section><hr class="home-closing-divider"><div class="home-closing">${homeClosing}</div></main>`,new URL(topWork.twitterImagePath,site.siteUrl).href);
 for (const w of works) {
   const route = `works/${w.slug}/`;
   const artQuote = esc(w.art_quote).replace(/\n/g, '<br>');

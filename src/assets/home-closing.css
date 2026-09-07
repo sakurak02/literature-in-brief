@@ -1,15 +1,19 @@
-.home-closing {
+.home-closing-divider {
   margin: 2.5rem 0 0;
-  padding-top: 2.5rem;
+  border: 0;
   border-top: 1px solid var(--line);
+}
+
+.home-closing {
+  max-width: 32rem;
+  margin: 2.25rem auto 0;
   color: var(--muted);
   font-size: .9375rem;
-  line-height: 2;
+  line-height: 1.8;
 }
 
 .home-closing p {
-  max-width: 32rem;
-  margin: 0 auto;
+  margin: 0;
 }
 
 .home-closing strong {
@@ -18,8 +22,11 @@
 }
 
 @media (max-width: 560px) {
-  .home-closing {
+  .home-closing-divider {
     margin-top: 2rem;
-    padding-top: 2rem;
+  }
+
+  .home-closing {
+    margin-top: 1.75rem;
   }
 }
