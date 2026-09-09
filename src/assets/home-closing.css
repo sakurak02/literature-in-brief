@@ -13,7 +13,11 @@
 }
 
 .home-closing p {
-  margin: 0;
+  margin: 0 0 1.15em;
+}
+
+.home-closing p:last-child {
+  margin-bottom: 0;
 }
 
 .home-closing strong {
