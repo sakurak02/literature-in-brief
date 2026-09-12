@@ -2,6 +2,8 @@
 title: 人間失格
 author: 太宰治
 year: 1948
+original_chars: 73000
+brief_chars: 4600
 slug: ningen-sikkaku
 number: "001"
 date: 2026-09-05

@@ -80,6 +80,14 @@ for (const entry of (await readdir(path.join(root, 'works'), {withFileTypes:true
   if (!match) throw Error(`${entry.name}: front matter が必要です`);
   const data = parseFrontMatter(match[1], entry.name);
   for (const key of ['title','author','year','slug','number','date','region','art_quote','museumUrl']) if (!data[key]) throw Error(`${entry.name}: ${key} が必要です`);
+  const charCountKeys = ['original_chars','brief_chars'];
+  const charCountFields = charCountKeys.filter(key => Object.hasOwn(data, key));
+  if (charCountFields.length === 1) throw Error(`${entry.name}: original_chars と brief_chars は両方記述してください`);
+  for (const key of charCountFields) {
+    if (!/^[1-9]\d*$/.test(data[key])) throw Error(`${entry.name}: ${key} は正の整数で記述してください`);
+    data[key] = Number(data[key]);
+    if (!Number.isSafeInteger(data[key])) throw Error(`${entry.name}: ${key} の値が大きすぎます`);
+  }
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(data.slug) || data.slug !== entry.name) throw Error(`${entry.name}: slug とフォルダ名を一致させてください`);
   if (!/^\d{3}$/.test(data.number)) throw Error(`${entry.name}: number は3桁の数字で記述してください`);
   if (workNumbers.has(data.number)) throw Error(`${entry.name}: number ${data.number} が他の作品と重複しています`);
@@ -120,6 +128,7 @@ const regionGroups = [
   {key:'foreign', label:'海外文学'},
 ];
 const byNumber = (a,b) => a.number.localeCompare(b.number) || a.slug.localeCompare(b.slug);
+const formatChars = value => new Intl.NumberFormat('en-US').format(value);
 const renderCard = w => `<a class="work-card" href="works/${w.slug}/"><img src="works/${w.slug}/art.webp" alt="" width="240" height="240"><div><div class="work-card__title"><span class="work-number">${esc(w.number)}</span><h4>${esc(w.title)}</h4></div><p>${esc(w.author)}<span class="year">${esc(w.year)}年</span></p></div></a>`;
 const renderRegion = ({key,label}) => {
   const regionWorks = works.filter(w=>w.region === key).sort(byNumber);
@@ -135,7 +144,9 @@ await page('',site.title,`<main id="main-content" class="home"><header class="in
 for (const w of works) {
   const route = `works/${w.slug}/`;
   const artQuote = esc(w.art_quote).replace(/\n/g, '<br>');
-  await page(route,`${w.title} — ${site.title}`,`<main id="main-content" class="reading"><nav aria-label="サイト"><a href="../../">Literature in Brief <span aria-hidden="true">／</span> 短く読む文学</a></nav><article><header class="work-heading"><p class="eyebrow">短く読む文学<span class="work-number">${esc(w.number)}</span></p><h1>${esc(w.title)}</h1><p>${esc(w.author)}<span class="year">原作 ${esc(w.year)}年</span></p></header><div class="prose">${w.html}</div><section class="artwork"><blockquote class="art-quote"><span class="art-quote__text"><span class="art-quote__mark art-quote__mark--open" aria-hidden="true">“</span>${artQuote}<span class="art-quote__mark art-quote__mark--close" aria-hidden="true">”</span></span></blockquote><a href="${esc(w.museumUrl)}"><img src="art.webp" alt="『${esc(w.title)}』から生まれたペン画" loading="lazy" decoding="async"></a><p><a href="${esc(w.museumUrl)}">静かな美術館でこの作品を見る <span aria-hidden="true">→</span></a></p></section></article><p class="back"><a href="../../">← 作品一覧へ</a></p></main>`,new URL(w.twitterImagePath,site.siteUrl).href);
+  const charCounts = w.original_chars ? `<p class="work-char-counts"><span>原作：約${formatChars(w.original_chars)}字</span><span>このサイト：約${formatChars(w.brief_chars)}字</span></p>` : '';
+  const bylineClass = charCounts ? ' class="work-byline"' : '';
+  await page(route,`${w.title} — ${site.title}`,`<main id="main-content" class="reading"><nav aria-label="サイト"><a href="../../">Literature in Brief <span aria-hidden="true">／</span> 短く読む文学</a></nav><article><header class="work-heading"><p class="eyebrow">短く読む文学<span class="work-number">${esc(w.number)}</span></p><h1>${esc(w.title)}</h1><p${bylineClass}>${esc(w.author)}<span class="year">原作 ${esc(w.year)}年</span></p>${charCounts}</header><div class="prose">${w.html}</div><section class="artwork"><blockquote class="art-quote"><span class="art-quote__text"><span class="art-quote__mark art-quote__mark--open" aria-hidden="true">“</span>${artQuote}<span class="art-quote__mark art-quote__mark--close" aria-hidden="true">”</span></span></blockquote><a href="${esc(w.museumUrl)}"><img src="art.webp" alt="『${esc(w.title)}』から生まれたペン画" loading="lazy" decoding="async"></a><p><a href="${esc(w.museumUrl)}">静かな美術館でこの作品を見る <span aria-hidden="true">→</span></a></p></section></article><p class="back"><a href="../../">← 作品一覧へ</a></p></main>`,new URL(w.twitterImagePath,site.siteUrl).href);
   await cp(path.join(w.folder,'art.webp'),path.join(out,route,'art.webp'));
 }
 await writeFile(path.join(out,'sitemap.xml'),`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${pages.map(p=>`<url><loc>${esc(new URL(p.route,site.siteUrl).href)}</loc></url>`).join('')}</urlset>`);
