@@ -128,10 +128,11 @@ const regionGroups = [
   {key:'foreign', label:'海外文学'},
 ];
 const byNumber = (a,b) => a.number.localeCompare(b.number) || a.slug.localeCompare(b.slug);
+const byPublishedDate = (a,b) => b.date.localeCompare(a.date) || b.number.localeCompare(a.number);
 const formatChars = value => new Intl.NumberFormat('en-US').format(value);
 const renderCard = w => `<a class="work-card" href="works/${w.slug}/"><img src="works/${w.slug}/art.webp" alt="" width="240" height="240"><div><div class="work-card__title"><span class="work-number">${esc(w.number)}</span><h4>${esc(w.title)}</h4></div><p>${esc(w.author)}<span class="year">${esc(w.year)}年</span></p></div></a>`;
 const renderRegion = ({key,label}) => {
-  const regionWorks = works.filter(w=>w.region === key).sort(byNumber);
+  const regionWorks = works.filter(w=>w.region === key).sort(byPublishedDate);
   return `<section class="work-group" aria-labelledby="region-${key}"><h3 id="region-${key}" class="region-title">${label}</h3><div class="works">${regionWorks.map(renderCard).join('')}</div></section>`;
 };
 const homeClosing = md.render(`舞台や制度、暮らしの形は変わっても、**見栄、執着、嫉妬、自己欺瞞、承認欲求、愛情と依存の入り混じり方**は、驚くほど変わらない。
