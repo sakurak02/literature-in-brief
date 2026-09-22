@@ -10,7 +10,8 @@ original_chars: 23000
 brief_chars: 3627
 museumUrl: "https://sakurak02.github.io/quiet-museum/artwork.html?id=D010"
 art_quote: |
-  彼は失敗を転じて遂に勝ちとした。
+  彼は失敗を転じて
+  遂に勝ちとした。
 ---
 
 # 阿Q正伝
