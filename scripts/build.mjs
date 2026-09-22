@@ -128,12 +128,16 @@ const regionGroups = [
   {key:'foreign', label:'海外文学'},
 ];
 const byNumber = (a,b) => a.number.localeCompare(b.number) || a.slug.localeCompare(b.slug);
-const byPublishedDate = (a,b) => b.date.localeCompare(a.date) || b.number.localeCompare(a.number);
+const byNumberDescending = (a,b) => b.number.localeCompare(a.number) || b.slug.localeCompare(a.slug);
 const formatChars = value => new Intl.NumberFormat('en-US').format(value);
 const renderCard = w => `<a class="work-card" href="works/${w.slug}/"><img src="works/${w.slug}/art.webp" alt="" width="240" height="240"><div><div class="work-card__title"><span class="work-number">${esc(w.number)}</span><h4>${esc(w.title)}</h4></div><p>${esc(w.author)}<span class="year">${esc(w.year)}年</span></p></div></a>`;
+const renderArchiveItem = w => `<a class="work-archive__item" href="works/${w.slug}/"><span class="work-number">${esc(w.number)}</span><span class="work-archive__separator" aria-hidden="true">｜</span><span class="work-archive__title">${esc(w.title)}</span><span class="work-archive__separator" aria-hidden="true">｜</span><span class="work-archive__author">${esc(w.author)}</span></a>`;
 const renderRegion = ({key,label}) => {
-  const regionWorks = works.filter(w=>w.region === key).sort(byPublishedDate);
-  return `<section class="work-group" aria-labelledby="region-${key}"><h3 id="region-${key}" class="region-title">${label}</h3><div class="works">${regionWorks.map(renderCard).join('')}</div></section>`;
+  const regionWorks = works.filter(w=>w.region === key).sort(byNumberDescending);
+  const recentWorks = regionWorks.slice(0,3);
+  const earlierWorks = regionWorks.slice(3);
+  const archive = earlierWorks.length ? `<details class="work-archive"><summary>以前の作品を見る</summary><div class="work-archive__list">${earlierWorks.map(renderArchiveItem).join('')}</div></details>` : '';
+  return `<section class="work-group" aria-labelledby="region-${key}"><h3 id="region-${key}" class="region-title">${label}</h3><div class="works">${recentWorks.map(renderCard).join('')}</div>${archive}</section>`;
 };
 const homeClosing = md.render(`舞台や制度、暮らしの形は変わっても、**見栄、執着、嫉妬、自己欺瞞、承認欲求、愛情と依存の入り混じり方**は、驚くほど変わらない。
 

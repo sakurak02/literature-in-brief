@@ -33,3 +33,38 @@
   font: 400 .8125rem/1.8 system-ui, sans-serif;
   letter-spacing: .02em;
 }
+
+.work-archive {
+  margin-top: 24px;
+}
+
+.work-archive summary {
+  width: max-content;
+  color: var(--muted);
+  cursor: pointer;
+  font: 400 .875rem/1.8 system-ui, sans-serif;
+}
+
+.work-archive__list {
+  margin-top: 12px;
+}
+
+.work-archive__item {
+  display: grid;
+  grid-template-columns: max-content max-content minmax(0, 1fr) max-content max-content;
+  align-items: baseline;
+  column-gap: .5rem;
+  padding: .4rem 0;
+  font-size: .875rem;
+  line-height: 1.8;
+  text-decoration: none;
+}
+
+.work-archive__separator,
+.work-archive__author {
+  color: var(--muted);
+}
+
+.work-archive__author {
+  font-size: .8125rem;
+}
